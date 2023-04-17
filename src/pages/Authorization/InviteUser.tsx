@@ -125,7 +125,7 @@ const InviteUser = () => {
             <Flex flexDir={"column"} w={"100%"} mt={5}>
               <FormControl isRequired>
                 <FormLabel>Role</FormLabel>
-                <Select isDisabled={isLoading} placeholder='Select option'>
+                <Select isDisabled={isLoading}>
                   <option value='1'>Employee</option>
                   <option value='2'>Manager</option>
                   <option value='4'>Admin</option>

@@ -1,5 +1,13 @@
-import { Flex, Button } from "@chakra-ui/react";
+import { Flex, Button, Text, Icon, Container, Tooltip } from "@chakra-ui/react";
 import { useState } from "react";
+import {
+  BsFillPeopleFill,
+  BsFillBriefcaseFill,
+  BsCreditCardFill,
+  BsDoorOpenFill,
+  BsFillCaretLeftFill,
+  BsFillCaretRightFill,
+} from "react-icons/bs";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const NavBar = () => {
@@ -24,34 +32,77 @@ const NavBar = () => {
       setFoldText("close");
     }
   };
+
+  let navbarElements = [
+    {
+      text: "Employees",
+      url: "employees",
+      icon: <BsFillPeopleFill color="var(--chakra-colors-twitter-900)" />,
+    },
+    {
+      text: "Products",
+      url: "products",
+      icon: <BsFillBriefcaseFill color="var(--chakra-colors-twitter-900)" />,
+    },
+    {
+      text: "Remuneration",
+      url: "remuneration",
+      icon: <BsCreditCardFill color="var(--chakra-colors-twitter-900)" />,
+    },
+    {
+      text: "Log Out",
+      url: "",
+      icon: <BsDoorOpenFill color="var(--chakra-colors-twitter-900)" />,
+      action: logOut,
+    },
+  ];
+
   return location.pathname.toLowerCase().match("login") ? null : (
     <Flex
       shadow={"2xl"}
       borderRight={"1px"}
       borderRightColor={"gray.300"}
       w={sideBarSize}
-      bg={"gray.100"}
+      bg={"white"}
       flexDir={"column"}
-      h={"100vh"}
+      minH={"100%"}
     >
       <Flex mb={10}>
-        <Flex justifyContent={"center"} alignSelf={"center"} flexGrow={1}>
-          Logo
+        <Flex
+          justifyContent={"center"}
+          ms={5}
+          alignSelf={"center"}
+          flexGrow={1}
+        >
+          <Text fontWeight={"bold"} textColor={"twitter.500"}>
+            Logo
+          </Text>
         </Flex>
-        <Button onClick={() => unFold()}>{foldText}</Button>
+        <Button
+          bg={"transparent"}
+          alignSelf={"center"}
+          onClick={() => unFold()}
+        >
+          {!isOpen ? <BsFillCaretRightFill /> : <BsFillCaretLeftFill />}
+        </Button>
       </Flex>
       <Flex flexDir={"column"}>
-        <Button onClick={() => navigate("employees")}>Employees</Button>
-        <Button onClick={() => navigate("add-employee")}>Add Employee</Button>
-        <Button onClick={() => navigate("products")}>Products</Button>
-        <Button onClick={() => navigate("add-product")}>Add Products</Button>
-        <Button
-          onClick={() => {
-            logOut();
-          }}
-        >
-          Log out
-        </Button>
+        {navbarElements.map((el) => {
+          return (
+            <Tooltip label={isOpen ? null : el.text}>
+              <Button
+                mb={3}
+                bg={"transparent"}
+                onClick={() =>
+                  el.action != undefined ? el.action() : navigate(el.url)
+                }
+              >
+                {isOpen ? null : el.icon}
+                {isOpen ? el.text : null}
+              </Button>
+            </Tooltip>
+          );
+        })}
       </Flex>
     </Flex>
   );
