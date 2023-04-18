@@ -7,6 +7,7 @@ import {
   Select,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { productEmployeeSales } from "../../models/productSales";
@@ -18,6 +19,7 @@ import Converters from "../../Utils/Converters";
 
 const Sales = () => {
   const params = useParams();
+  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [productsSales, setProductsSales] = useState<
     Array<productEmployeeSales>
@@ -36,17 +38,45 @@ const Sales = () => {
   };
 
   const updateProdctSold = (productsSold: productEmployeeSales) => {
-    // setLoading(true);
-    // try{
-    //     axios.post()
-    // }finally{
-    //     setLoading(false);
-    // }
+    setLoading(true);
+    try {
+      axios
+        .patch(process.env.REACT_APP_BASE_URL + "employeesales", {
+          id: productsSold.id,
+          productsSold: productsSold.productsSold,
+        })
+        .then((response) => {
+          return toast({
+            title: "Sales updated!",
+            status: "success",
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+          });
+        })
+        .catch((err) => {
+          let errorMsg = "";
+          if (err.response?.data?.error != null)
+            errorMsg = err.response?.data?.error;
+          else errorMsg = "Something went wrong";
+
+          setLoading(false);
+          return toast({
+            title: errorMsg,
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+          });
+        });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     let currentDate = new Date();
-    setMonth(currentDate.getUTCMonth().toString());
+    setMonth((currentDate.getUTCMonth() + 1).toString());
     setYear(currentDate.getUTCFullYear().toString());
   }, []);
   useEffect(() => {
@@ -122,7 +152,7 @@ const Sales = () => {
                   <Card
                     my={3}
                     id={sale.id}
-                    w={{ base: "base", sm:"sm", md:"md", lg:"lg" }}
+                    w={{ base: "base", sm: "sm", md: "md", lg: "lg" }}
                     py={4}
                     px={3}
                   >

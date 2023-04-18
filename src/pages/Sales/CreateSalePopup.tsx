@@ -40,13 +40,7 @@ const CreateSalePopup = (props: any) => {
         productsSold,
       })
       .then((response) => {
-        return toast({
-          title: "Sales registered",
-          status: "success",
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-        });
+        window.location.reload();
       });
   };
 
@@ -54,12 +48,13 @@ const CreateSalePopup = (props: any) => {
     if (isOpen !== true) return;
 
     let currentDate = new Date();
-    setMonth(currentDate.getUTCMonth().toString());
+    setMonth((currentDate.getUTCMonth() + 1).toString());
     setYear(currentDate.getUTCFullYear().toString());
     axios
       .get(process.env.REACT_APP_BASE_URL + "product/all")
       .then((response) => {
         setProducts(response.data.content);
+        setProductId(response.data.content[0].id);
       });
   }, [isOpen]);
   return (

@@ -18,7 +18,7 @@ import Converters from "../../Utils/Converters";
 const ProductRewards = () => {
   const toast = useToast();
   const params = useParams();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [productRewards, setProductRewards] = useState<Array<productReward>>(
     new Array<productReward>()
   );
@@ -29,7 +29,7 @@ const ProductRewards = () => {
   };
 
   const updateReward = (reward: productReward) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       if (reward.id === NIL_UUID) {
         axios
@@ -41,6 +41,8 @@ const ProductRewards = () => {
             reward: Number.parseInt(reward.reward) ?? 0,
           })
           .then((response) => {
+            refreshProductRewards();
+            setIsLoading(false);
             return toast({
               title: "reward created",
               status: "success",
@@ -59,7 +61,7 @@ const ProductRewards = () => {
             reward: Number.parseInt(reward.reward),
           })
           .then((response) => {
-            setLoading(false);
+            setIsLoading(false);
             return toast({
               title: "reward updated",
               status: "success",
@@ -67,14 +69,29 @@ const ProductRewards = () => {
               isClosable: true,
               position: "bottom-right",
             });
+          })
+          .catch((err) => {
+            let errorMsg = "";
+            if (err.response?.data?.error != null)
+              errorMsg = err.response?.data?.error;
+            else errorMsg = "Something went wrong";
+
+            setIsLoading(false);
+            return toast({
+              title: errorMsg,
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+              position: "bottom-right",
+            });
           });
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
+  const refreshProductRewards = () => {
     axios
       .get(
         process.env.REACT_APP_BASE_URL +
@@ -84,7 +101,25 @@ const ProductRewards = () => {
         if (response.data.error == null) {
           setProductRewards(response.data.content);
         }
+      })
+      .catch((err) => {
+        let errorMsg = "";
+        if (err.response?.data?.error != null)
+          errorMsg = err.response?.data?.error;
+        else errorMsg = "Something went wrong";
+
+        setIsLoading(false);
+        return toast({
+          title: errorMsg,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+        });
       });
+  };
+  useEffect(() => {
+    refreshProductRewards();
   }, []);
 
   return (
@@ -109,19 +144,22 @@ const ProductRewards = () => {
                   <Flex flexGrow={1} flexDir={"column"} justifyContent={"end"}>
                     <Text mb={2}>Reward per product sold</Text>
                     <NumberInput
-                      isDisabled={loading}
+                      isDisabled={isLoading}
                       w={"150px"}
                       me={3}
                       value={el.reward}
                       onChange={(input) =>
-                        updateRewardValue(el, Converters.textToNumberParser(input))
+                        updateRewardValue(
+                          el,
+                          Converters.textToNumberParser(input)
+                        )
                       }
                     >
                       <NumberInputField />
                     </NumberInput>
                     <Button
                       mt={5}
-                      isLoading={loading}
+                      isLoading={isLoading}
                       onClick={() => updateReward(el)}
                     >
                       Update reward

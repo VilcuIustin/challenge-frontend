@@ -9,6 +9,7 @@ import {
   BsFillCaretRightFill,
 } from "react-icons/bs";
 import { useLocation, useNavigate } from "react-router-dom";
+import { canAccessRoles } from "../../Utils/canAccess";
 
 const NavBar = () => {
   const [sideBarSize, setSideBarSize] = useState(80);
@@ -19,7 +20,7 @@ const NavBar = () => {
   const logOut = () => {
     window.localStorage.removeItem("token");
     window.localStorage.removeItem("refreshToken");
-    navigate("login");
+    window.location.href = "login";
   };
   const unFold = () => {
     if (isOpen) {
@@ -38,22 +39,26 @@ const NavBar = () => {
       text: "Employees",
       url: "employees",
       icon: <BsFillPeopleFill color="var(--chakra-colors-twitter-900)" />,
+      visible: canAccessRoles(['Manager', 'Admin']),
     },
     {
       text: "Products",
       url: "products",
       icon: <BsFillBriefcaseFill color="var(--chakra-colors-twitter-900)" />,
+      visible: canAccessRoles(['Manager', 'Admin']),
     },
     {
       text: "Remuneration",
       url: "remuneration",
       icon: <BsCreditCardFill color="var(--chakra-colors-twitter-900)" />,
+      visible: canAccessRoles(['Manager', 'Admin']),
     },
     {
       text: "Log Out",
       url: "",
       icon: <BsDoorOpenFill color="var(--chakra-colors-twitter-900)" />,
       action: logOut,
+      visible: true,
     },
   ];
 
@@ -89,7 +94,7 @@ const NavBar = () => {
       <Flex flexDir={"column"}>
         {navbarElements.map((el) => {
           return (
-            <Tooltip label={isOpen ? null : el.text}>
+            el.visible ? <Tooltip label={isOpen ? null : el.text}>
               <Button
                 mb={3}
                 bg={"transparent"}
@@ -101,7 +106,7 @@ const NavBar = () => {
                 {isOpen ? el.text : null}
               </Button>
             </Tooltip>
-          );
+          : null);
         })}
       </Flex>
     </Flex>

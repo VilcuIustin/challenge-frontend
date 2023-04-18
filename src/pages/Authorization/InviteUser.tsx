@@ -14,9 +14,10 @@ import axios from "axios";
 import { useState } from "react";
 
 const InviteUser = () => {
-  const toast = useToast()
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>("");
+  const [role, setRole] = useState(1);
   const [lastName, setLastName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [errorFirstName, setErrorFirstName] = useState<string>("");
@@ -28,70 +29,77 @@ const InviteUser = () => {
     setLastName(lastName.trim());
     setEmail(email.trim());
 
-    if(firstName.length == 0){
+    if (firstName.length == 0) {
       setErrorFirstName("First name is required");
       setIsLoading(false);
-    }
-    else if(firstName.length > 128){
+    } else if (firstName.length > 128) {
       setErrorFirstName("First name must be at maximum 128 characters");
       setIsLoading(false);
-    }
-    else{
+    } else {
       setErrorFirstName("");
     }
-    if(lastName.length == 0){
+    if (lastName.length == 0) {
       setErrorLastName("Last name is required");
       setIsLoading(false);
-    }
-    else if(lastName.length > 128){
+    } else if (lastName.length > 128) {
       setErrorLastName("Last name must be at maximum 128 characters");
       setIsLoading(false);
-    }
-    else{
+    } else {
       setErrorLastName("");
     }
 
-    if(email.length == 0){
+    if (email.length == 0) {
       setErrorEmail("Email field is required");
       setIsLoading(false);
-    }
-    else if(email.length > 320){
+    } else if (email.length > 320) {
       setErrorEmail("Email need to be at maximum of 320 characters");
       setIsLoading(false);
-    }
-    else if(!email.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/)){
+    } else if (
+      !email.match(
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+      )
+    ) {
       setErrorEmail("Email is not in the correct format");
       setIsLoading(false);
-    }
-    else{
+    } else {
       setErrorEmail("");
     }
 
-    if((errorFirstName + errorLastName + errorEmail) != "")
-      return;
+    if (errorFirstName + errorLastName + errorEmail != "") return;
 
-    axios.post(process.env.REACT_APP_BASE_URL+"auth/enroll", 
-    {
-      firstName: firstName,
-      lastName:lastName,
-      email:email
-    }
-    ).then(response => {
-      setIsLoading(false);
-      return toast({
-        title: 'Employee invited',
-        status: 'success',
-        duration: 9000,
-        isClosable: true,
-        position: 'bottom-right'
+    axios
+      .post(process.env.REACT_APP_BASE_URL + "auth/enroll", {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        role: role,
       })
-    }).catch(ex => {
-      console.log(ex);
-      setIsLoading(false);
-    })
+      .then((response) => {
+        setIsLoading(false);
+        return toast({
+          title: "Employee invited",
+          status: "success",
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+      })
+      .catch((err) => {
+        let errorMsg = "";
+        if (err.response?.data?.error != null)
+          errorMsg = err.response?.data?.error;
+        else errorMsg = "Something went wrong";
 
-  }
-
+        setIsLoading(false);
+        return toast({
+          title: errorMsg,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+      });
+  };
 
   return (
     <Flex w={"100%"} alignItems={"center"} flexDir={"column"}>
@@ -104,31 +112,44 @@ const InviteUser = () => {
             <Flex flexDir={"column"} w={"100%"} mt={5}>
               <FormControl isRequired isInvalid={errorFirstName != ""}>
                 <FormLabel>First name</FormLabel>
-                <Input onChange={(e) => setFirstName(e.target.value)} isDisabled={isLoading}/>
+                <Input
+                  onChange={(e) => setFirstName(e.target.value)}
+                  isDisabled={isLoading}
+                />
                 <FormErrorMessage>{errorFirstName}</FormErrorMessage>
               </FormControl>
             </Flex>
             <Flex flexDir={"column"} w={"100%"} mt={5}>
               <FormControl isRequired isInvalid={errorLastName != ""}>
                 <FormLabel>Last name</FormLabel>
-                <Input onChange={(e) => setLastName(e.target.value)} isDisabled={isLoading}/>
+                <Input
+                  onChange={(e) => setLastName(e.target.value)}
+                  isDisabled={isLoading}
+                />
                 <FormErrorMessage>{errorLastName}</FormErrorMessage>
               </FormControl>
             </Flex>
             <Flex flexDir={"column"} w={"100%"} mt={5}>
               <FormControl isRequired isInvalid={errorEmail != ""}>
                 <FormLabel>Email</FormLabel>
-                <Input onChange={(e) => setEmail(e.target.value)} isDisabled={isLoading}/>
+                <Input
+                  onChange={(e) => setEmail(e.target.value)}
+                  isDisabled={isLoading}
+                />
                 <FormErrorMessage>{errorEmail}</FormErrorMessage>
               </FormControl>
             </Flex>
             <Flex flexDir={"column"} w={"100%"} mt={5}>
               <FormControl isRequired>
                 <FormLabel>Role</FormLabel>
-                <Select isDisabled={isLoading}>
-                  <option value='1'>Employee</option>
-                  <option value='2'>Manager</option>
-                  <option value='4'>Admin</option>
+                <Select
+                  defaultValue={1}
+                  onChange={(el) => setRole(Number(el.target.value))}
+                  isDisabled={isLoading}
+                >
+                  <option value="1">Employee</option>
+                  <option value="2">Manager</option>
+                  <option value="4">Admin</option>
                 </Select>
               </FormControl>
             </Flex>
@@ -138,7 +159,13 @@ const InviteUser = () => {
               justifyContent={"center"}
               alignItems={"center"}
             >
-              <Button colorScheme='twitter' isLoading={isLoading} onClick={() => createEmployee()} w={"100%"} mt={10}>
+              <Button
+                colorScheme="twitter"
+                isLoading={isLoading}
+                onClick={() => createEmployee()}
+                w={"100%"}
+                mt={10}
+              >
                 Create employee
               </Button>
             </Flex>
@@ -150,4 +177,3 @@ const InviteUser = () => {
 };
 
 export default InviteUser;
-
